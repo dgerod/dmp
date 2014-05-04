@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-
 # ==================================================================================================
 # dgerod.xyz-lab.org.es - 2014
 # --------------------------------------------------------------------------------------------------
 # Learn DMP data from a trajectory.
 # ==================================================================================================
 
-import roslib; roslib.load_manifest('dmp')
+import roslib; roslib.load_manifest("dmp")
 import rospy 
 import numpy as np
+
 from dmp.srv import *
 from dmp.msg import *
 
@@ -17,7 +17,7 @@ from dmp.srv._LearnDMPFromDemo import LearnDMPFromDemoResponse
 
 # --------------------------------------------------------------------------------------------------
 
-#Learn a DMP from demonstration data
+# Learn a DMP from demonstration data
 def makeLFDRequest(dims, traj, dt, K_gain, 
                    D_gain, num_bases):
     demotraj = DMPTraj()
@@ -32,9 +32,9 @@ def makeLFDRequest(dims, traj, dt, K_gain,
     d_gains = [D_gain]*dims
         
     print "Starting LfD..."
-    rospy.wait_for_service('learn_dmp_from_demo')
+    rospy.wait_for_service("learn_dmp_from_demo")
     try:
-        lfd = rospy.ServiceProxy('learn_dmp_from_demo', LearnDMPFromDemo)
+        lfd = rospy.ServiceProxy("learn_dmp_from_demo", LearnDMPFromDemo)
         resp = lfd(demotraj, k_gains, d_gains, num_bases)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
@@ -44,18 +44,26 @@ def makeLFDRequest(dims, traj, dt, K_gain,
 
 # --------------------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   
-    rospy.init_node('learn_dmp_from_trj')
+    rospy.init_node("learn_dmp_from_trj")
 
-    # Read trajectory from a bag
+    # Read trajectory from a bag/file
     # --------------------------------------------------------
     
-    # Create a DMP from a 2-D trajectory
-    dims = 2                
-    dt = 1.0                
-    num_bases = 4          
-    traj = [[1.0,1.0],[2.0,2.0],[3.0,4.0],[6.0,8.0]]
+    bag = rosbag.Bag("robot_joint-states.bag", "r")
+    
+    traj = []    
+    for topic, msg, t in bag.read_messages("/iri_wam/joint_states"):
+      traj.append(msg.position)
+    
+    dt = 1.0
+    num_bases = len(traj)
+    dims = len(msg.position)
+    
+    print traj
+    print num_bases, dims
+    print "num bases: %d, dims: %d" % (num_bases, dims)
     
     # Create a DMP from the loaded trajectory
     # --------------------------------------------------------
@@ -71,7 +79,7 @@ if __name__ == '__main__':
     # --------------------------------------------------------
     
     bag = rosbag.Bag("dmp_data.bag", "w");
-    bag.write("LearnDMPFromDemoResponse",resp)
+    bag.write("LearnDMPFromDemoResponse", resp)
     bag.close()
     
 # ==================================================================================================

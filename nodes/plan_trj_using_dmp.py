@@ -1,31 +1,30 @@
 #!/usr/bin/env python
-
 # ==================================================================================================
 # dgerod.xyz-lab.org.es - 2014
 # --------------------------------------------------------------------------------------------------
 # Plan a trajectory using DMP data.
 # ==================================================================================================
 
-import roslib; 
-roslib.load_manifest('dmp')
+import roslib; roslib.load_manifest("dmp")
 import rospy 
 import numpy as np
+
 from dmp.srv import *
 from dmp.msg import *
 
-import rosbag
+import rosbag, yaml
 
 # --------------------------------------------------------------------------------------------------
 
-#Set a DMP as active for planning
+# Set a DMP as active for planning
 def makeSetActiveRequest(dmp_list):
     try:
-        sad = rospy.ServiceProxy('set_active_dmp', SetActiveDMP)
+        sad = rospy.ServiceProxy("set_active_dmp", SetActiveDMP)
         sad(dmp_list)
     except rospy.ServiceException, e:
         print "Service call failed: %s"%e
 
-#Generate a plan from a DMP
+# Generate a plan from a DMP
 def makePlanRequest(x_0, x_dot_0, t_0, goal, goal_thresh, 
                     seg_length, tau, dt, integrate_iter):
     print "Starting DMP planning..."
@@ -53,18 +52,22 @@ if __name__ == '__main__':
     for topic, msg, t in bag.read_messages(topics=['LearnDMPFromDemoResponse']):
       print msg
     bag.close();    
-  
+    
     resp = msg;
-        
+    
     # Set it as the active DMP
     # --------------------------------------------------------
-    
+
+    num_bases = len(resp.dmp_list[0].weights)
+    dims =len(resp.dmp_list)    
+    print "num bases: %d, dims: %d" % (num_bases, dims)
+  
     makeSetActiveRequest(resp.dmp_list)
 
     # Generate a plan based on DMP
     # --------------------------------------------------------
-    
-    # Prepare parameters
+
+    # Default parameters (2D trajectory)
     x_0 = [0.0,0.0]          # Plan starting at a different point than demo 
     x_dot_0 = [0.0,0.0]   
     t_0 = 0                
@@ -73,11 +76,37 @@ if __name__ == '__main__':
     seg_length = -1          # Plan until convergence to goal
     tau = 2 * resp.tau       # Desired plan should take twice as long as demo
     dt = 1.0
-    integrate_iter = 5       # dt is rather large, so this is > 1  
+    integrate_iter = 5       # dt is rather large, so this is > 1
+    
+    # Read parameters (e.g. goal) from file
+    try:
+      cfg = open('dmp_plan-cfg.yaml')
+      dataMap = yaml.safe_load(cfg)
+      cfg.close()
+      
+      print dataMap
+        
+      x_0 = dataMap['start']['positions']
+      x_dot_0 = dataMap['start']['velocities']
+      t_0 = dataMap['start']['time']
+      goal = dataMap['goal']['positions']      
+    except:
+      raise 
+    
+    # Now, generate a plan using loaded parameters    
+    resp = makePlanRequest(x_0, x_dot_0, t_0, goal, goal_thresh, seg_length, tau, dt, integrate_iter)
 
-    # Now, generate a plan    
-    plan = makePlanRequest(x_0, x_dot_0, t_0, goal, goal_thresh, seg_length, tau, dt, integrate_iter)
-
-    print plan
-
+    print resp
+    
+    num_bases = len(resp.plan.points)
+    dims =len(resp.plan.points[0].positions)    
+    print "num bases: %d, dims: %d" % (num_bases, dims)
+      
+    # Export plan (new trajectory) to another bag
+    # --------------------------------------------------------
+    
+    bag = rosbag.Bag("dmp_plan-trj.bag", "w");
+    bag.write("GetDMPPlanResponse", resp)
+    bag.close()
+    
 # ==================================================================================================
