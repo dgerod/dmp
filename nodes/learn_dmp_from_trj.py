@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # ==================================================================================================
-# dgerod.xyz-lab.org.es - 2014
+# dgerod@xyz-lab.org.es - 2014
+- 2014
 # --------------------------------------------------------------------------------------------------
 # Learn DMP data from a trajectory.
 # ==================================================================================================
+
+import sys
 
 import roslib; roslib.load_manifest("dmp")
 import rospy 
@@ -13,13 +16,12 @@ from dmp.srv import *
 from dmp.msg import *
 
 import rosbag
-from dmp.srv._LearnDMPFromDemo import LearnDMPFromDemoResponse
 
 # --------------------------------------------------------------------------------------------------
 
 # Learn a DMP from demonstration data
-def makeLFDRequest(dims, traj, dt, K_gain, 
-                   D_gain, num_bases):
+def makeLFDRequest(dims, traj, dt, K_gain, D_gain, num_bases):
+    
     demotraj = DMPTraj()
         
     for i in range(len(traj)):
@@ -48,13 +50,17 @@ if __name__ == "__main__":
   
     rospy.init_node("learn_dmp_from_trj")
 
-    # Read trajectory from a bag/file
+    # Read trajectory from a topic ( e.g. "/joint_states") # in bag/file 
+    # (e.g. "joint-states.bag")
     # --------------------------------------------------------
-    
-    bag = rosbag.Bag("robot_joint-states.bag", "r")
+
+    fileBag = sys.argv[1]
+    topicName = sys.argv[2]
+        
+    bag = rosbag.Bag(fileBag, "r")
     
     traj = []    
-    for topic, msg, t in bag.read_messages("/iri_wam/joint_states"):
+    for topic, msg, t in bag.read_messages(topicName):
       traj.append(msg.position)
     
     dt = 1.0
@@ -71,14 +77,15 @@ if __name__ == "__main__":
     K = 100                 
     D = 2.0 * np.sqrt(K)      
     
-    resp = makeLFDRequest(dims, traj, dt, K, D, num_bases)
-    
+    resp = makeLFDRequest(dims, traj, dt, K, D, num_bases)    
     print resp
   
-    # Export DMP to another bag
+    # Export DMP to another bag (e.g. "dmp-data.bag")
     # --------------------------------------------------------
     
-    bag = rosbag.Bag("dmp_data.bag", "w");
+    fileBag = sys.argv[3]
+    
+    bag = rosbag.Bag(fileBag, "w");
     bag.write("LearnDMPFromDemoResponse", resp)
     bag.close()
     
