@@ -13,35 +13,9 @@ import numpy as np
 
 from dmp.srv import *
 from dmp.msg import *
+from dmp_client import makeLFDRequest
 
 import rosbag
-
-# --------------------------------------------------------------------------------------------------
-
-# Learn a DMP from demonstration data
-def makeLFDRequest(dims, traj, dt, K_gain, D_gain, num_bases):
-    
-    demotraj = DMPTraj()
-        
-    for i in range(len(traj)):
-        pt = DMPPoint();
-        pt.positions = traj[i]
-        demotraj.points.append(pt)
-        demotraj.times.append(dt*i)
-            
-    k_gains = [K_gain]*dims
-    d_gains = [D_gain]*dims
-        
-    print "Starting LfD..."
-    rospy.wait_for_service("learn_dmp_from_demo")
-    try:
-        lfd = rospy.ServiceProxy("learn_dmp_from_demo", LearnDMPFromDemo)
-        resp = lfd(demotraj, k_gains, d_gains, num_bases)
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
-    print "LfD done"    
-            
-    return resp;
 
 # --------------------------------------------------------------------------------------------------
 

@@ -13,33 +13,9 @@ import numpy as np
 
 from dmp.srv import *
 from dmp.msg import *
+from dmp_client import makeSetActiveRequest, makePlanRequest
 
 import rosbag, yaml
-
-# --------------------------------------------------------------------------------------------------
-
-# Set a DMP as active for planning
-def makeSetActiveRequest(dmp_list):
-    try:
-        sad = rospy.ServiceProxy("set_active_dmp", SetActiveDMP)
-        sad(dmp_list)
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
-
-# Generate a plan from a DMP
-def makePlanRequest(x_0, x_dot_0, t_0, goal, goal_thresh, 
-                    seg_length, tau, dt, integrate_iter):
-    print "Starting DMP planning..."
-    rospy.wait_for_service('get_dmp_plan')
-    try:
-        gdp = rospy.ServiceProxy('get_dmp_plan', GetDMPPlan)
-        resp = gdp(x_0, x_dot_0, t_0, goal, goal_thresh, 
-                   seg_length, tau, dt, integrate_iter)
-    except rospy.ServiceException, e:
-        print "Service call failed: %s"%e
-    print "DMP planning done"   
-            
-    return resp;
 
 # --------------------------------------------------------------------------------------------------
 
