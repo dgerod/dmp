@@ -2,8 +2,11 @@
 <package>
   <name>dmp</name>
   <version>0.0.0</version>
-  <description>Implements Dynamic Movement Primitives in a robot agnostic way</description>
-
+  <description>
+    Implements Dynamic Movement Primitives in a robot agnostic way.
+    This is a modification of Niekum's package done by dgerod@xyz-lab.org.es.
+  </description>
+  
   <author>Scott Niekum</author>
   <maintainer email="sniekum@cs.umass.edu">Scott Niekum</maintainer>
   <license>BSD</license>
@@ -11,11 +14,16 @@
   <url type="website">http://www.ros.org/wiki/dmp</url>
   
   <buildtool_depend>catkin</buildtool_depend>  
+  
+  <build_depend>common_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>eigen</build_depend>
+
+  <run_depend>common_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>rospy</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>eigen</run_depend>
