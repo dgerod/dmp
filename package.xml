@@ -2,12 +2,13 @@
 <package>
   <name>dmp</name>
   <version>0.0.0</version>
-  <description>The dmp package</description>
+  <description>Implements Dynamic Movement Primitives in a robot agnostic way</description>
 
-  <maintainer email="sniekum@cmu.edu">Scott Niekum</maintainer>
   <author>Scott Niekum</author>
+  <maintainer email="sniekum@cs.umass.edu">Scott Niekum</maintainer>
   <license>BSD</license>
-  <url>http://ros.org/wiki/dmp</url>
+  
+  <url type="website">http://www.ros.org/wiki/dmp</url>
   
   <buildtool_depend>catkin</buildtool_depend>  
   <build_depend>std_msgs</build_depend>
