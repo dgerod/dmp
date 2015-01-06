@@ -15,3 +15,4 @@ DMPData[] dmp_list
 
 # A time constant (in seconds) that will cause the DMPs to replay at the same speed they were demonstrated. 
 float64 tau
+

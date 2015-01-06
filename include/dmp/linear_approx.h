@@ -15,7 +15,7 @@
  *     copyright notice, this list of conditions and the following
  *     disclaimer in the documentation and/or other materials provided
  *     with the distribution.
- *   * Neither the name of the Robert Bosch nor the names of its
+ *   * Neither the name of Willow Garage nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
@@ -38,23 +38,23 @@
   * \author Scott Niekum
   */
 
-#ifndef RADIAL_APPROX_H_
-#define RADIAL_APPROX_H_
+#ifndef LINEAR_APPROX_H_
+#define LINEAR_APPROX_H_
 
 #include "dmp/function_approx.h"
 #include <iostream>
-#include <Eigen/Core>
-#include <Eigen/SVD>
-#include <Eigen/LU>
 
 namespace dmp{
 
-/// Class for linear function approximation with the univariate Radial basis
-class RadialApprox : public FunctionApprox{
+typedef std::pair<double, double> pt_pair;
+
+      
+/// Class for function approximation by recording points and linearly interpolating
+class LinearApprox : public FunctionApprox{
 public:
-	RadialApprox(int num_bases, double base_width, double alpha);
-	RadialApprox(const std::vector<double> &w, double base_width, double alpha);
-	virtual ~RadialApprox();
+	LinearApprox();
+        LinearApprox(std::vector<double> X, std::vector<double> Y);
+	virtual ~LinearApprox();
 
 	/**\brief Evaluate the function approximator at point x
 	 * \param x The point at which to evaluate
@@ -68,24 +68,13 @@ public:
 	 */
 	virtual void leastSquaresWeights(double *X, double *Y, int n_pts);
 
+        
 private:
-	/**\brief Calculate the Radial basis features at point x
-	 * \param x The point at which to get features
-	 */
-	void calcFeatures(double x);
-
-	/**\brief Calculate the Moore-Penrose pseudoinverse of a matrix using SVD
-	 * \param mat The matrix to pseudoinvert
-	 * \return The pseudoinverted matrix
-	 */
-	Eigen::MatrixXd pseudoinverse(Eigen::MatrixXd mat);
-
-	double *Features;  //Storage for a set of features
-	double *Centers;   //Centers of RBFs
-	double *Widths;    //Widths of RBFs
+ 
+        std::vector<pt_pair> Points;
 
 };
 
 }
 
-#endif /* RADIAL_APPROX_H_ */
+#endif /* LINEAR_APPROX_H_ */

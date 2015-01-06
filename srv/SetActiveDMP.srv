@@ -6,6 +6,3 @@ DMPData[] dmp_list
 #True if no errors
 bool success
 
-
-
-

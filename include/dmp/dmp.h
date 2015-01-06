@@ -47,6 +47,7 @@
 #include "dmp/SetActiveDMP.h"
 #include "dmp/radial_approx.h"
 #include "dmp/fourier_approx.h"
+#include "dmp/linear_approx.h"
 #include <math.h>
 
 namespace dmp{

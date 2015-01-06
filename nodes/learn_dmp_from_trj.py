@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # ==================================================================================================
 # dgerod@xyz-lab.org.es - 2014
-- 2014
 # --------------------------------------------------------------------------------------------------
 # Learn DMP data from a trajectory.
 # ==================================================================================================
@@ -50,7 +49,7 @@ if __name__ == "__main__":
   
     rospy.init_node("learn_dmp_from_trj")
 
-    # Read trajectory from a topic ( e.g. "/joint_states") # in bag/file 
+    # Read trajectory from a topic ( e.g. "/joint_states") in bag/file 
     # (e.g. "joint-states.bag")
     # --------------------------------------------------------
 

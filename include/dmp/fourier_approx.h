@@ -82,7 +82,7 @@ private:
 	 */
 	Eigen::MatrixXd pseudoinverse(Eigen::MatrixXd mat);
 
-	double *features;  //Storage for a set of features
+	double *Features;  //Storage for a set of features
 
 };
 

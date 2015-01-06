@@ -37,6 +37,3 @@ DMPTraj plan
 #1 if the final time is greater than tau AND the planned position is within goal_thresh of the goal, 0 otherwise
 uint8 at_goal
 
-
-
-

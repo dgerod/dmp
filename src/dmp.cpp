@@ -83,11 +83,11 @@ void learnFromDemo(const DMPTraj &demo,
 	int dims = demo.points[0].positions.size();
 	double tau = demo.times[n_pts-1];
 
-	double *x_demo = new double[n_pts];
-	double *v_demo = new double[n_pts];
-	double *v_dot_demo = new double[n_pts];
-	double *f_domain = new double[n_pts];
-	double *f_targets = new double[n_pts];
+	double* x_demo = new double[n_pts];
+	double* v_demo = new double[n_pts];
+	double* v_dot_demo = new double[n_pts];
+	double* f_domain = new double[n_pts];
+	double* f_targets = new double[n_pts];
 	FunctionApprox *f_approx = new FourierApprox(num_bases);
 
 	//Compute the DMP weights for each DOF separately
@@ -125,6 +125,10 @@ void learnFromDemo(const DMPTraj &demo,
 		curr_dmp->weights = f_approx->getWeights();
 		curr_dmp->k_gain = curr_k;
 		curr_dmp->d_gain = curr_d;
+                for(int i=0; i<n_pts; i++){
+                    curr_dmp->f_domain.push_back(f_domain[i]); 
+                    curr_dmp->f_targets.push_back(f_targets[i]);
+                }
 		dmp_list.push_back(*curr_dmp);
 	}
 
@@ -221,7 +225,7 @@ void generatePlan(const vector<DMPData> &dmp_list,
 				else{
 					f_eval = f[i]->evalAt(log_s) * s;
 				}
-
+				
 				//Update v dot and x dot based on DMP differential equations
 				double v_dot = (dmp_list[i].k_gain*((goal[i]-x) - (goal[i]-x_0[i])*s + f_eval) - dmp_list[i].d_gain*v) / tau;
 				double x_dot = v/tau;
@@ -245,7 +249,7 @@ void generatePlan(const vector<DMPData> &dmp_list,
 			for(int i=0; i<dims; i++){
 				if(goal_thresh[i] > 0){
 					if(fabs(x_vecs[i][n_pts-1] - goal[i]) > goal_thresh[i])
-						at_goal = false;
+						{ at_goal = false; }
 				}
 			}
 		}

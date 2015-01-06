@@ -67,16 +67,16 @@ public:
 	/**\brief Returns the number of basis functions
 	 * \return The number of basis functions used by the approximator
 	 */
-	int getNumBases(){return n_bases;}
+	int getNumBases(){return NumBases;}
 
 	/**\brief Returns the current weight vector
 	 * \return The current weight vector
 	 */
-	std::vector<double> getWeights(){return weights;}
+	std::vector<double> getWeights(){return Weights;}
 
 protected:
-	int n_bases;					//The number of bases in the approximator
-	std::vector<double> weights;	//The weight vector
+	int NumBases;					//The number of bases in the approximator
+	std::vector<double> Weights;	//The weight vector
 };
 
 }
