@@ -1,0 +1,6 @@
+# Learn a DMP from a trajectory.
+# Configuration parameters of the DMP.
+bfs: 80
+K: 100
+dt: 1.0 
+
