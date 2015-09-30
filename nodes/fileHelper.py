@@ -1,5 +1,5 @@
 # ========================================================================================
-# dgerod@xyz-lab.org.es - 2014
+# dgerod@xyz-lab.org.es - 201x
 # ----------------------------------------------------------------------------------------
 # Load information from different types of files.
 # ========================================================================================
@@ -9,65 +9,116 @@ import rospy
 import rosbag, yaml
 
 def readPtpTrajectory(bag_name):
-    """ Open a bag file and loads JointStage messages from the /joint_states topic. """
+    """ 
+    Open a bag file and loads 'JointStage' messages from the '/joint_states topic'. 
+    """
   
     trajectory = []    
 
     bag = rosbag.Bag(bag_name, "r")
     for topic, msg, t in bag.read_messages("/joint_states"):
-      trajectory.append(msg.position)
+        trajectory.append(msg.position)
     bag.close()
         
     if len(trajectory) > 0:
-      dims = len(trajectory[0])
+        dims = len(trajectory[0])
     else:
-      dims = 0
+        dims = 0
       
     return trajectory, dims
     
 def readCartTrajectory(bag_name):
-    """ Open a bag file and loads only the X,Y coordinates of PoseStamped message 
-    from the /pose topic. """
+    """ 
+    Open a bag file and loads only the X,Y coordinates of 'PoseStamped' message 
+    from the '/pose topic'. 
+    """
     
     trajectory = []    
 
+    # ATTENTION: Only X, Y coordinates are used at this moment.
     bag = rosbag.Bag(bag_name, "r")
-    for topic, msg, t in bag.read_messages("/pose"):
-      trajectory.append( [msg.pose.position.x, msg.pose.position.y] )
+    for topic, msg, t in bag.read_messages("/pose"):        
+        trajectory.append( [msg.pose.position.x, msg.pose.position.y] )
     bag.close()
     
     if len(trajectory) > 0:
-      dims = len(trajectory[0])
+        dims = len(trajectory[0])
     else:
-      dims = 0
+        dims = 0
+            
+    return trajectory, dims
+
+def readHandTrajectory(bag_name):
+    """ 
+    Open a bag file and loads 5*N messages of 'PoseStamped', that's X,Y,Z,4q coordinates,  
+    from the '/hand topic'. 
+    """
+    
+    trajectory = []    
+    fdx = 0
+    num_fingers = 5
+        
+    # M messages = 5 fingers * N messages of pose type
+    bag = rosbag.Bag(bag_name, "r")
+    for topic, msg, t in bag.read_messages("/hand"):
+    
+        if fdx == 0: 
+            pose = []
+
+        position = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        orientation = np.array([msg.pose.orientation.x, msg.pose.orientation.y, msg.pose.orientation.z, msg.pose.orientation.w]) 
+        pose = np.concatenate([pose, np.concatenate([position, orientation])])
+                     
+        fdx = (fdx+1) % num_fingers
+        if fdx == 0:
+            trajectory.append(pose)
+    bag.close()
+    
+    if len(trajectory) > 0:
+        dims = len(trajectory[0])
+    else:
+        dims = 0
             
     return trajectory, dims
 
 def readDmpParameters(file_name):
-  
-    bfs = 80 
-    K = 100                 
-    D = 2.0 * np.sqrt(K)
-    dt = 1.0
-  
-    # Read parameters from a file (e.g. "dmp-cfg.yaml")
+    """
+    Read parameters from a file (e.g. "dmp-cfg.yaml")
+    Parameters with their typical values are:    
+       - ns = 100
+       - dt = 1.0
+       - K = 100                 
+       - D = 2.0 * np.sqrt(K)
+       - bfs = 80
+    """
+    
     try:
         yaml_file = open(file_name)
         config_data = yaml.safe_load(yaml_file)
         yaml_file.close()
           
-        bfs = config_data["bfs"]  
+        ns = config_data["ns"]  
+        dt = config_data["dt"]  
         K = config_data["K"]        
         D = 2.0 * np.sqrt(K)
-        dt = config_data["dt"]  
+        bfs = config_data["bfs"]  
                 
     except:
         raise IOError("Problem loading mDMP parameters.") 
          
-    return bfs, K, D, dt
+    return ns, dt, K, D, bfs 
     
 def readPlanConfiguration(file_name, tau):
-    """ Read the configuration of a plan from a defined YAML file. """
+    """ 
+    Read the configuration of a plan from a defined YAML file. 
+    Parameters are:
+        - start
+            - positions: [] (1,dim)
+            - velocities: [] (1,dim)
+            - time: 0
+        - goal  
+            - positions: [] (1,dim)
+    """
     
     # Default parameters (2D trajectory)
     x_0 = [0.0, 0.0]          # Plan starting at a different point than demo 
@@ -94,19 +145,28 @@ def readPlanConfiguration(file_name, tau):
          
     return x_0, x_dot_0, goal, t_0, tau
 
-def readDmp(bag_name):
+def readDmpData(bag_name):
+    """ 
+    Open a bag file and loads a DMP data. 
+    """
     bag = rosbag.Bag(bag_name, "r");
     for topic, msg, t in bag.read_messages("LearnDMPFromDemoResponse"):
         resp = msg
     bag.close()
     return resp 
 
-def writeDmp(bag_name, resp):
+def writeDmpData(bag_name, resp):
+    """
+    Write a DMP data to a bag file.
+    """
     bag = rosbag.Bag(bag_name, "w");
     bag.write("LearnDMPFromDemoResponse", resp)
     bag.close()
   
-def writePlannedTrajectory(bag_name, plan):      
+def writePlannedTrajectory(bag_name, plan):
+    """
+    Write a trajectory generated by a DMP to a bag file.
+    """      
     bag = rosbag.Bag(bag_name, "w");
     bag.write("DMPTraj", plan)
     bag.close()
